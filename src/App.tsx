@@ -3,7 +3,6 @@ import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, S
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
 import FakeTerminal from './components/FakeTerminal';
-import { Browser } from "@capacitor/browser";
 
 interface AppWindow {
   id: string;
@@ -44,20 +43,8 @@ function App() {
 
   const apps = [
     { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
-    {
-      icon: Chrome,
-      name: 'Chrome',
-      content: (
-        <button
-          onClick={async () => await Browser.open({ url: "https://docs.babywen.io/" })}
-          className="w-full h-full flex items-center justify-center bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200"
-        >
-          Ouvrir la documentation
-        </button>
-      ),
-      width: 800,
-      height: 600,
-    }    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
+   //{ icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: 800, height: 600 },
+    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
     { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
     { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
     { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: 800, height: 600 }
