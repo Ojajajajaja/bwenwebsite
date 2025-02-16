@@ -186,7 +186,7 @@ function App() {
           className="absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden"
           style={{
             width: Math.min(window.innerWidth * 0.8, 800) + 'px',
-            height: Math.min(window.innerHeight * 0.7, 600) + 'px',
+            height: Math.min(window.innerHeight * 0.8, 700) + 'px', // Increased height
             left: window.position.x,
             top: window.position.y,
             zIndex: window.zIndex,
@@ -209,7 +209,7 @@ function App() {
               <span className="text-sm font-medium">{window.title}</span>
             </div>
           </div>
-          <div className="p-4 text-white/90 h-[calc(100%-2rem)]">
+          <div className="p-4 text-white/90 h-[calc(100%-2rem)] overflow-auto"> {/* Added overflow-auto */}
             {window.content}
           </div>
         </div>

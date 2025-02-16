@@ -32,23 +32,28 @@ const JupiterSwap: React.FC = () => {
 
   useEffect(() => {
     if (scriptLoaded && containerRef.current && window.Jupiter) {
-      try {
-        window.Jupiter.init({
-          displayMode: 'integrated',
-          integratorId: 'BabyWen-Desktop',
-          elementId: containerRef.current.id,
-          defaultExplorer: 'Solana Explorer',
-          defaultRoute: 'swap',
-          strictTokenList: false,
-          widgetStyle: {
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-          },
-        });
-      } catch (error) {
-        console.error('Error initializing Jupiter Terminal:', error);
-      }
+      const initJupiter = () => {
+        try {
+          window.Jupiter.init({
+            displayMode: 'integrated',
+            integratorId: 'BabyWen-Desktop',
+            elementId: containerRef.current?.id,
+            defaultExplorer: 'Solana Explorer',
+            defaultRoute: 'swap',
+            strictTokenList: false,
+            widgetStyle: {
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+            },
+          });
+        } catch (error) {
+          console.error('Error initializing Jupiter Terminal:', error);
+        }
+      };
+
+      // Delay initialization to ensure the element is in the DOM
+      setTimeout(initJupiter, 100);
     }
   }, [scriptLoaded]);
 
