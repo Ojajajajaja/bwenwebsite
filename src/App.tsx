@@ -3,6 +3,7 @@ import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, S
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
 import FakeTerminal from './components/FakeTerminal';
+import "@jup-ag/terminal/css";
 
 interface AppWindow {
   id: string;
