@@ -271,7 +271,7 @@ function App() {
       })}
 
       {/* Dock */}
-      <div className="absolute bottom-[2vh] left-1/2 transform -translate-x-1/2">
+      <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2">
         <div className="flex items-end space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
           {apps.map((app, index) => (
             <div key={index} className="group flex flex-col items-center relative">
