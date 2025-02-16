@@ -40,12 +40,12 @@ function App() {
 
   const desktopIcons: DesktopIcon[] = [
     { 
-      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="24" height="24" />,
+      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
       name: 'X',
       url: 'https://x.com/babywen_CTO'
     },
     { 
-      icon: () => <img src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" alt="Telegram" width="24" height="24" style={{filter: 'brightness(0) invert(1)'}}/>,
+      icon: () => <img src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" alt="Telegram" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
       name: 'Telegram',
       url: 'https://t.me/babywenportal'
     },
