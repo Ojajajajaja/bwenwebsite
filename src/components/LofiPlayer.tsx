@@ -42,17 +42,43 @@ const LofiPlayer: React.FC = () => {
         }
       });
 
-      if (analyserRef.current) {
+      if (analyserRef.current && canvasRef.current) {
         const bufferLength = analyserRef.current.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
         const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
+        const ctx = canvas.getContext('2d');
 
         const draw = () => {
-          // ... existing visualization code ...
+          if (!ctx) return;
+          animationRef.current = requestAnimationFrame(draw);
+
+          analyserRef.current!.getByteFrequencyData(dataArray);
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const barWidth = (canvas.width / bufferLength) * 2.5;
+          let barHeight;
+          let x = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i] / 2;
+
+            ctx.fillStyle = `rgb(${barHeight + 100},50,50)`;
+            ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+            x += barWidth + 1;
+          }
         };
 
         draw();
+      }
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
     }
 
@@ -83,16 +109,20 @@ const LofiPlayer: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-black/60 backdrop-blur-lg p-4 rounded-lg w-full max-w-md overflow-hidden">
-      <div 
-        className="absolute inset-0 opacity-50"
-        style={{
-          backgroundImage: 'url(https://media1.giphy.com/media/26zzgaDnp9HgPX1uw/giphy.gif?cid=6c09b9521sm8b7ov8yl3wd6j9svpouy3caf33fbb201ylm41&ep=v1_gifs_search&rid=giphy.gif&ct=g)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
+    <div className="bg-black/60 backdrop-blur-lg p-4 rounded-lg w-full max-w-md overflow-hidden">
+      <div className="relative">
+        <canvas ref={canvasRef} width="300" height="80" className="w-full mb-4" />
+        <div 
+          className="absolute inset-0 opacity-50"
+          style={{
+            backgroundImage: 'url(https://media1.giphy.com/media/26zzgaDnp9HgPX1uw/giphy.gif?cid=6c09b9521sm8b7ov8yl3wd6j9svpouy3caf33fbb201ylm41&ep=v1_gifs_search&rid=giphy.gif&ct=g)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            mixBlendMode: 'overlay'
+          }}
+        />
+      </div>
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-white text-lg font-semibold">Lofi Radio</h2>

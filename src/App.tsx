@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
+import JupiterSwap from './components/JupiterSwap';
 
 interface AppWindow {
   id: string;
@@ -35,7 +36,8 @@ function App() {
     { icon: Chrome, name: 'Chrome', content: 'Web Browser' },
     { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
     { icon: Settings, name: 'Settings', content: 'System Preferences' },
-    { icon: Music, name: 'Music', content: <LofiPlayer /> }
+    { icon: Music, name: 'Music', content: <LofiPlayer /> },
+    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap /> }
   ];
 
   const desktopIcons: DesktopIcon[] = [
@@ -59,11 +61,6 @@ function App() {
       return;
     }
 
-    const windowWidth = Math.min(globalThis.innerWidth * 0.8, 800);
-    const windowHeight = Math.min(globalThis.innerHeight * 0.7, 600);
-    const centerX = (globalThis.innerWidth - windowWidth) / 2;
-    const centerY = (globalThis.innerHeight - windowHeight) / 2;
-
     const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
@@ -71,8 +68,8 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: centerX,
-        y: centerY
+        x: Math.random() * (window.innerWidth - 400),
+        y: Math.random() * (window.innerHeight - 300)
       },
       content: app.content
     };
@@ -174,8 +171,6 @@ function App() {
           key={window.id}
           className="absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden"
           style={{
-            width: Math.min(globalThis.innerWidth * 0.8, 800) + 'px',
-            height: Math.min(globalThis.innerHeight * 0.7, 600) + 'px',
             left: window.position.x,
             top: window.position.y,
             zIndex: window.zIndex,
@@ -198,7 +193,7 @@ function App() {
               <span className="text-sm font-medium">{window.title}</span>
             </div>
           </div>
-          <div className="p-4 text-white/90 h-[calc(100%-2rem)]">
+          <div className="p-4 text-white/90">
             {window.content}
           </div>
         </div>
