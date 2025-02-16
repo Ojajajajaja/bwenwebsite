@@ -5,66 +5,18 @@ const LofiPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animationRef = useRef<number | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-
-  const initializeAudio = async () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const audio = new Audio();
-      audio.crossOrigin = "anonymous";
-      audio.src = 'https://live.hunter.fm/lofi_high';
-      audio.loop = true;
-      audio.volume = volume;
-      audioRef.current = audio;
-
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      sourceRef.current = audioContextRef.current.createMediaElementSource(audio);
-      sourceRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(audioContextRef.current.destination);
-      analyserRef.current.fftSize = 256;
-    }
-  };
 
   useEffect(() => {
-    if (isPlaying) {
-      initializeAudio().then(() => {
-        if (audioContextRef.current && audioRef.current) {
-          audioContextRef.current.resume().then(() => {
-            audioRef.current?.play().catch(error => {
-              console.error("Error playing audio:", error);
-              setIsPlaying(false);
-            });
-          });
-        }
-      });
-
-      if (analyserRef.current) {
-        const bufferLength = analyserRef.current.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-
-        const draw = () => {
-          // ... existing visualization code ...
-        };
-
-        draw();
-      }
-    }
+    const audio = new Audio('https://live.hunter.fm/lofi_high');
+    audio.loop = true;
+    audio.volume = volume;
+    audioRef.current = audio;
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      audio.pause();
+      audio.src = '';
     };
-  }, [isPlaying]);
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -73,17 +25,23 @@ const LofiPlayer: React.FC = () => {
   }, [volume]);
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
   };
 
   return (
-    <div className="relative bg-black/60 backdrop-blur-lg p-4 rounded-lg w-full max-w-md overflow-hidden">
+    <div className="relative bg-black/60 backdrop-blur-lg p-4 rounded-lg w-full h-full overflow-hidden flex flex-col justify-center">
       <div 
         className="absolute inset-0 opacity-50"
         style={{
