@@ -55,21 +55,6 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Add viewport height style to body
-  useEffect(() => {
-    document.body.style.height = '100vh';
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.height = '100vh';
-    document.documentElement.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.height = '';
-      document.body.style.overflow = '';
-      document.documentElement.style.height = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, []);
-
   const getResponsiveDimensions = (baseWidth: number, baseHeight: number) => {
     const aspectRatio = baseWidth / baseHeight;
     let width = Math.min(baseWidth, windowDimensions.width * 0.9);
@@ -123,7 +108,7 @@ function App() {
       zIndex: highestZIndex + 1,
       position: {
         x: isChrome ? 0 : Math.random() * (windowDimensions.width - width),
-        y: isChrome ? taskbarHeight : Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight,
+        y: isChrome ? 0 : Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight,
       },
       content: app.content,
       isFullScreen: isChrome,
@@ -168,8 +153,8 @@ function App() {
         return {
           ...w,
           position: {
-            x: Math.max(0, Math.min(e.clientX - dragOffset.x, windowDimensions.width - 100)),
-            y: Math.max(taskbarHeight, Math.min(e.clientY - dragOffset.y, windowDimensions.height - 100))
+            x: e.clientX - dragOffset.x,
+            y: e.clientY - dragOffset.y
           }
         };
       }
@@ -194,8 +179,8 @@ function App() {
           ...w,
           isFullScreen: !w.isFullScreen,
           position: !w.isFullScreen 
-            ? { x: 0, y: taskbarHeight }
-            : { x: Math.random() * (windowDimensions.width - width), y: Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight },
+            ? { x: 0, y: 0 }
+            : { x: Math.random() * (windowDimensions.width - width), y: Math.random() * (windowDimensions.height - height) },
         };
       }
       return w;
@@ -203,7 +188,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-cover bg-center relative bg-gray-900"
+    <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
          style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
          onMouseMove={handleMouseMove}
          onMouseUp={handleMouseUp}>
@@ -250,7 +235,7 @@ function App() {
               top: window.position.y,
               zIndex: window.zIndex,
               width: window.isFullScreen ? '100%' : width,
-              height: window.isFullScreen ? `calc(100% - ${taskbarHeight}px)` : height,
+              height: window.isFullScreen ? '100%' : height,
             }}
           >
             <div
@@ -286,7 +271,7 @@ function App() {
       })}
 
       {/* Dock */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
         <div className="flex items-end space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
           {apps.map((app, index) => (
             <div key={index} className="group flex flex-col items-center relative">
