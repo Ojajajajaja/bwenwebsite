@@ -209,7 +209,7 @@ function App() {
               <span className="text-sm font-medium">{window.title}</span>
             </div>
           </div>
-          <div className="p-4 text-white/90 h-[calc(100%-2rem)]">
+          <div className="p-4 text-white/90 h-[calc(100%-2rem)] overflow-auto">
             {window.content}
           </div>
         </div>

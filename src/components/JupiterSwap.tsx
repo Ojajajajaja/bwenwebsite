@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 declare global {
   interface Window {
@@ -8,18 +8,35 @@ declare global {
 
 const JupiterSwap: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://terminal.jup.ag/main-v2.js';
-    script.async = true;
-    
-    script.onload = () => {
-      if (containerRef.current && window.Jupiter) {
+    if (!scriptLoaded) {
+      const script = document.createElement('script');
+      script.src = 'https://terminal.jup.ag/main-v2.js';
+      script.async = true;
+      
+      script.onload = () => {
+        setScriptLoaded(true);
+      };
+
+      document.body.appendChild(script);
+
+      return () => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      };
+    }
+  }, [scriptLoaded]);
+
+  useEffect(() => {
+    if (scriptLoaded && containerRef.current && window.Jupiter) {
+      try {
         window.Jupiter.init({
           displayMode: 'integrated',
           integratorId: 'BabyWen-Desktop',
-          elementId: 'jupiter-terminal',
+          elementId: containerRef.current.id,
           defaultExplorer: 'Solana Explorer',
           defaultRoute: 'swap',
           strictTokenList: false,
@@ -29,17 +46,11 @@ const JupiterSwap: React.FC = () => {
             height: '100%',
           },
         });
+      } catch (error) {
+        console.error('Error initializing Jupiter Terminal:', error);
       }
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
-  }, []);
+    }
+  }, [scriptLoaded]);
 
   return <div id="jupiter-terminal" ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 };
