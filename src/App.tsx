@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
+import JupiterSwap from './components/JupiterSwap';
 
 interface Window {
   id: string;
@@ -34,7 +35,7 @@ function App() {
     { icon: Finder, name: 'Finder', content: 'File Explorer' },
     { icon: Chrome, name: 'Chrome', content: 'Web Browser' },
     { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
-    { icon: Settings, name: 'Settings', content: 'System Preferences' },
+    { icon: Settings, name: 'Settings', content: <JupiterSwap /> },
     { icon: Music, name: 'Music', content: <LofiPlayer /> }
   ];
 
