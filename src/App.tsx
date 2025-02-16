@@ -39,7 +39,7 @@ function App() {
   ];
 
   const desktopIcons: DesktopIcon[] = [
-    { icon: Twitter, name: 'X.com', url: 'https://x.com/babywenCTO' },
+    { icon: X, name: 'X', url: 'https://x.com/babywen_CTO' },
     { icon: Send, name: 'Telegram', url: 'https://t.me/babywenportal' },
     { icon: BarChart3, name: 'DexScreener', url: 'https://dexscreener.com' },
   ];
