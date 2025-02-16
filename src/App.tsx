@@ -26,6 +26,10 @@ function App() {
   const [windows, setWindows] = useState<AppWindow[]>([]);
   const [highestZIndex, setHighestZIndex] = useState(1);
   const [taskbarHeight, setTaskbarHeight] = useState(0);
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -39,15 +43,38 @@ function App() {
     if (taskbar) {
       setTaskbarHeight(taskbar.offsetHeight);
     }
+
+    const handleResize = () => {
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const getResponsiveDimensions = (baseWidth: number, baseHeight: number) => {
+    const aspectRatio = baseWidth / baseHeight;
+    let width = Math.min(baseWidth, windowDimensions.width * 0.9);
+    let height = width / aspectRatio;
+
+    if (height > windowDimensions.height * 0.8) {
+      height = windowDimensions.height * 0.8;
+      width = height * aspectRatio;
+    }
+
+    return { width, height };
+  };
+
   const apps = [
-    { icon: Finder, name: 'Finder', content: 'File Explorer', width: '80vw', height: '70vh' },
-    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: '90vw', height: '80vh' },
-    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: '80vw', height: '70vh' },
-    { icon: Settings, name: 'Settings', content: 'System Preferences', width: '80vw', height: '70vh' },
-    { icon: Music, name: 'Music', content: <LofiPlayer />, width: '40vw', height: '20vh' },
-    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: '90vw', height: '80vh' }
+    { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
+    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: 800, height: 600 },
+    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
+    { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
+    { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
+    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: 800, height: 600 }
   ];
 
   const desktopIcons: DesktopIcon[] = [
@@ -71,6 +98,7 @@ function App() {
       return;
     }
 
+    const { width, height } = getResponsiveDimensions(app.width, app.height);
     const isChrome = app.name === 'Chrome';
     const newWindow: AppWindow = {
       id: app.name,
@@ -79,8 +107,8 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: isChrome ? 0 : Math.random() * (window.innerWidth - app.width),
-        y: isChrome ? 0 : Math.random() * (window.innerHeight - app.height - taskbarHeight) + taskbarHeight,
+        x: isChrome ? 0 : Math.random() * (windowDimensions.width - width),
+        y: isChrome ? 0 : Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight,
       },
       content: app.content,
       isFullScreen: isChrome,
@@ -145,12 +173,14 @@ function App() {
   const toggleFullScreen = (id: string) => {
     setWindows(windows.map(w => {
       if (w.id === id && w.id === 'Chrome') {
+        const app = apps.find(a => a.name === id);
+        const { width, height } = getResponsiveDimensions(app?.width || 800, app?.height || 600);
         return {
           ...w,
           isFullScreen: !w.isFullScreen,
           position: !w.isFullScreen 
             ? { x: 0, y: 0 }
-            : { x: Math.random() * (window.innerWidth - 800), y: Math.random() * (window.innerHeight - 600) },
+            : { x: Math.random() * (windowDimensions.width - width), y: Math.random() * (windowDimensions.height - height) },
         };
       }
       return w;
@@ -195,6 +225,7 @@ function App() {
       {/* Windows */}
       {windows.map((window) => {
         const app = apps.find(a => a.name === window.id);
+        const { width, height } = getResponsiveDimensions(app?.width || 800, app?.height || 600);
         return (
           <div
             key={window.id}
@@ -203,8 +234,8 @@ function App() {
               left: window.position.x,
               top: window.position.y,
               zIndex: window.zIndex,
-              width: window.isFullScreen ? '100%' : app?.width,
-              height: window.isFullScreen ? '100%' : app?.height,
+              width: window.isFullScreen ? '100%' : width,
+              height: window.isFullScreen ? '100%' : height,
             }}
           >
             <div
