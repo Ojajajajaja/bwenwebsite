@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2 } from 'lucide-react';
+import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2, Book } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
 import FakeTerminal from './components/FakeTerminal';
@@ -16,7 +16,7 @@ interface AppWindow {
 }
 
 interface DesktopIcon {
-  icon: React.ElementType;
+  icon: React.ElementType | (() => JSX.Element);
   name: string;
   url: string;
 }
@@ -43,7 +43,6 @@ function App() {
 
   const apps = [
     { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
-   //{ icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: 800, height: 600 },
     { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
     { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
     { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
@@ -52,16 +51,37 @@ function App() {
 
   const desktopIcons: DesktopIcon[] = [
     { 
-      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="40" height="40" style={{filter: 'brightness(0) invert(1)'}}/>,
+      icon: () => <img 
+        src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" 
+        alt="X" 
+        width="40" 
+        height="40" 
+        style={{filter: 'brightness(0) invert(1)'}}
+      />,
       name: 'X',
       url: 'https://x.com/babywen_CTO'
     },
     { 
-      icon: () => <img src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" alt="Telegram" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
+      icon: () => <img 
+        src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" 
+        alt="Telegram" 
+        width="48" 
+        height="48" 
+        style={{filter: 'brightness(0) invert(1)'}}
+      />,
       name: 'Telegram',
       url: 'https://t.me/babywenportal'
     },
-    { icon: BarChart3, name: 'DexScreener', url: 'https://dexscreener.com' },
+    { 
+      icon: BarChart3, 
+      name: 'DexScreener', 
+      url: 'https://dexscreener.com' 
+    },
+    { 
+      icon: Book, 
+      name: 'Docs', 
+      url: 'https://docs.babywen.io' 
+    }
   ];
 
   const openWindow = (app: typeof apps[0]) => {
@@ -71,7 +91,15 @@ function App() {
       return;
     }
 
-    const isChrome = app.name === 'Chrome';
+    // Calculate centered position
+    const windowWidth = app.width;
+    const windowHeight = app.height;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    const centerX = (screenWidth - windowWidth) / 2;
+    const centerY = (screenHeight - windowHeight) / 2 + taskbarHeight / 2;
+
     const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
@@ -79,11 +107,11 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: isChrome ? 0 : Math.random() * (window.innerWidth - app.width),
-        y: isChrome ? 0 : Math.random() * (window.innerHeight - app.height - taskbarHeight) + taskbarHeight,
+        x: centerX,
+        y: centerY,
       },
       content: app.content,
-      isFullScreen: isChrome,
+      isFullScreen: false,
     };
 
     setWindows([...windows, newWindow]);
@@ -144,13 +172,16 @@ function App() {
 
   const toggleFullScreen = (id: string) => {
     setWindows(windows.map(w => {
-      if (w.id === id && w.id === 'Chrome') {
+      if (w.id === id) {
         return {
           ...w,
           isFullScreen: !w.isFullScreen,
           position: !w.isFullScreen 
             ? { x: 0, y: 0 }
-            : { x: Math.random() * (window.innerWidth - 800), y: Math.random() * (window.innerHeight - 600) },
+            : { 
+                x: (window.innerWidth - (w.isFullScreen ? window.innerWidth : w.width || 800)) / 2,
+                y: (window.innerHeight - (w.isFullScreen ? window.innerHeight : w.height || 600)) / 2 
+              },
         };
       }
       return w;
@@ -158,12 +189,17 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
-         style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
-         onMouseMove={handleMouseMove}
-         onMouseUp={handleMouseUp}>
+    <div 
+      className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
+      style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
       {/* Menu Bar */}
-      <div id="taskbar" className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5">
+      <div 
+        id="taskbar" 
+        className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5"
+      >
         <div className="flex items-center space-x-4">
         </div>
         <div className="flex items-center space-x-4">
@@ -183,7 +219,7 @@ function App() {
             onClick={() => openUrl(icon.url)}
           >
             <div className="w-16 h-16 bg-black/20 rounded-xl backdrop-blur-xl flex items-center justify-center group-hover:bg-white/10 transition-all duration-200">
-              <icon.icon className="w-10 h-10 text-white/90" />
+              {typeof icon.icon === 'function' ? icon.icon() : <icon.icon className="w-10 h-10 text-white/90" />}
             </div>
             <span className="mt-1 text-xs text-white/90 bg-black/40 px-2 py-1 rounded-md backdrop-blur-xl">
               {icon.name}
@@ -212,7 +248,7 @@ function App() {
               onMouseDown={(e) => handleMouseDown(e, window.id)}
             >
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-                {window.id === 'Chrome' && (
+                {window.id !== 'Music' && (
                   <button
                     onClick={() => toggleFullScreen(window.id)}
                     className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"

@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const FakeTerminal: React.FC = () => {
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState<string[]>(['Welcome to BabyWen Terminal.']);
+  const [output, setOutput] = useState<{text: string, type: 'input' | 'response'}[]>([
+    {text: 'Welcome to BabyWen Terminal.', type: 'response'}
+  ]);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,7 +24,8 @@ const FakeTerminal: React.FC = () => {
   };
 
   const processCommand = (command: string) => {
-    setOutput([...output, `$ ${command}`]);
+    // Add user input to output
+    setOutput(prev => [...prev, { text: `$ ${command}`, type: 'input' }]);
     
     // Easter egg commands
     const easterEggs = {
@@ -42,7 +45,7 @@ const FakeTerminal: React.FC = () => {
     const response = processEasterEgg(command.toLowerCase()) || `Command not found: ${command}`;
     
     if (response !== undefined) {
-      setOutput(prev => [...prev, response]);
+      setOutput(prev => [...prev, { text: response, type: 'response' }]);
     }
   };
 
@@ -65,17 +68,29 @@ const FakeTerminal: React.FC = () => {
         </style>
         <div id="terminal-output">
           {output.map((line, index) => (
-            <div key={index}>{line}</div>
+            <div 
+              key={index} 
+              className={
+                line.type === 'input' 
+                  ? 'text-blue-400' 
+                  : 'text-white'
+              }
+            >
+              {line.text}
+            </div>
           ))}
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="flex">
-        <span className="mr-2">$</span>
+      <form 
+        onSubmit={handleSubmit} 
+        className="flex bg-gray-900 rounded-md p-2"
+      >
+        <span className="mr-2 text-blue-400">$</span>
         <input
           type="text"
           value={input}
           onChange={handleInputChange}
-          className="flex-grow bg-transparent outline-none"
+          className="flex-grow bg-transparent outline-none text-blue-400"
           autoFocus
         />
       </form>
