@@ -55,6 +55,21 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Add viewport height style to body
+  useEffect(() => {
+    document.body.style.height = '100vh';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.height = '100vh';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.height = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.height = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
+
   const getResponsiveDimensions = (baseWidth: number, baseHeight: number) => {
     const aspectRatio = baseWidth / baseHeight;
     let width = Math.min(baseWidth, windowDimensions.width * 0.9);
@@ -188,7 +203,7 @@ function App() {
   };
 
   return (
-    <div className="h-full w-full bg-cover bg-center relative overflow-hidden bg-gray-900"
+    <div className="h-screen w-screen bg-cover bg-center relative bg-gray-900"
          style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
          onMouseMove={handleMouseMove}
          onMouseUp={handleMouseUp}>
