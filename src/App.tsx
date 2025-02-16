@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
+import FakeTerminal from './components/FakeTerminal';
 
 interface AppWindow {
   id: string;
@@ -11,7 +12,7 @@ interface AppWindow {
   zIndex: number;
   position: { x: number; y: number };
   content: React.ReactNode;
-  isFullScreen?: boolean;
+  isFullScreen: boolean;
 }
 
 interface DesktopIcon {
@@ -41,12 +42,12 @@ function App() {
   }, []);
 
   const apps = [
-    { icon: Finder, name: 'Finder', content: 'File Explorer' },
-    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" /> },
-    { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
-    { icon: Settings, name: 'Settings', content: 'System Preferences' },
-    { icon: Music, name: 'Music', content: <LofiPlayer /> },
-    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap /> }
+    { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
+    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: 800, height: 600 },
+    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
+    { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
+    { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
+    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: 800, height: 600 }
   ];
 
   const desktopIcons: DesktopIcon[] = [
@@ -78,8 +79,8 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: isChrome ? 0 : Math.random() * (window.innerWidth - 400),
-        y: isChrome ? taskbarHeight : Math.random() * (window.innerHeight - 300 - taskbarHeight) + taskbarHeight,
+        x: isChrome ? 0 : Math.random() * (window.innerWidth - app.width),
+        y: isChrome ? 0 : Math.random() * (window.innerHeight - app.height - taskbarHeight) + taskbarHeight,
       },
       content: app.content,
       isFullScreen: isChrome,
@@ -143,11 +144,13 @@ function App() {
 
   const toggleFullScreen = (id: string) => {
     setWindows(windows.map(w => {
-      if (w.id === id) {
+      if (w.id === id && w.id === 'Chrome') {
         return {
           ...w,
           isFullScreen: !w.isFullScreen,
-          position: w.isFullScreen ? { x: Math.random() * (window.innerWidth - 400), y: Math.random() * (window.innerHeight - 300 - taskbarHeight) + taskbarHeight } : { x: 0, y: taskbarHeight },
+          position: !w.isFullScreen 
+            ? { x: 0, y: 0 }
+            : { x: Math.random() * (window.innerWidth - 800), y: Math.random() * (window.innerHeight - 600) },
         };
       }
       return w;
@@ -190,46 +193,51 @@ function App() {
       </div>
 
       {/* Windows */}
-      {windows.map((window) => (
-        <div
-          key={window.id}
-          className={`absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden ${window.isFullScreen ? 'w-full' : ''}`}
-          style={{
-            left: window.position.x,
-            top: window.position.y,
-            zIndex: window.zIndex,
-            width: window.isFullScreen ? '100%' : 'auto',
-            height: window.isFullScreen ? `calc(100% - ${taskbarHeight}px)` : 'auto',
-          }}
-        >
+      {windows.map((window) => {
+        const app = apps.find(a => a.name === window.id);
+        return (
           <div
-            className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
-            onMouseDown={(e) => handleMouseDown(e, window.id)}
+            key={window.id}
+            className={`absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden`}
+            style={{
+              left: window.position.x,
+              top: window.position.y,
+              zIndex: window.zIndex,
+              width: window.isFullScreen ? '100%' : app?.width,
+              height: window.isFullScreen ? '100%' : app?.height,
+            }}
           >
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-              <button
-                onClick={() => toggleFullScreen(window.id)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
-              >
-                {window.isFullScreen ? <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" /> : <Maximize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />}
-              </button>
-              <button
-                onClick={() => closeWindow(window.id)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
-              >
-                <X className="w-4 h-4 text-white/70 group-hover:text-white/90" />
-              </button>
+            <div
+              className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
+              onMouseDown={(e) => handleMouseDown(e, window.id)}
+            >
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+                {window.id === 'Chrome' && (
+                  <button
+                    onClick={() => toggleFullScreen(window.id)}
+                    className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
+                  >
+                    {window.isFullScreen ? <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" /> : <Maximize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />}
+                  </button>
+                )}
+                <button
+                  onClick={() => closeWindow(window.id)}
+                  className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
+                >
+                  <X className="w-4 h-4 text-white/70 group-hover:text-white/90" />
+                </button>
+              </div>
+              <div className="flex items-center space-x-2 text-white/80">
+                <window.icon className="w-4 h-4" />
+                <span className="text-sm font-medium">{window.title}</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2 text-white/80">
-              <window.icon className="w-4 h-4" />
-              <span className="text-sm font-medium">{window.title}</span>
+            <div className="h-[calc(100%-2rem)] overflow-auto">
+              {window.content}
             </div>
           </div>
-          <div className={`p-4 text-white/90 ${window.isFullScreen ? 'h-[calc(100%-2rem)]' : ''}`}>
-            {window.content}
-          </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Dock */}
       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
