@@ -108,7 +108,7 @@ function App() {
       zIndex: highestZIndex + 1,
       position: {
         x: isChrome ? 0 : Math.random() * (windowDimensions.width - width),
-        y: isChrome ? 0 : Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight,
+        y: isChrome ? taskbarHeight : Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight,
       },
       content: app.content,
       isFullScreen: isChrome,
@@ -153,8 +153,8 @@ function App() {
         return {
           ...w,
           position: {
-            x: e.clientX - dragOffset.x,
-            y: e.clientY - dragOffset.y
+            x: Math.max(0, Math.min(e.clientX - dragOffset.x, windowDimensions.width - 100)),
+            y: Math.max(taskbarHeight, Math.min(e.clientY - dragOffset.y, windowDimensions.height - 100))
           }
         };
       }
@@ -179,8 +179,8 @@ function App() {
           ...w,
           isFullScreen: !w.isFullScreen,
           position: !w.isFullScreen 
-            ? { x: 0, y: 0 }
-            : { x: Math.random() * (windowDimensions.width - width), y: Math.random() * (windowDimensions.height - height) },
+            ? { x: 0, y: taskbarHeight }
+            : { x: Math.random() * (windowDimensions.width - width), y: Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight },
         };
       }
       return w;
@@ -188,7 +188,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
+    <div className="h-full w-full bg-cover bg-center relative overflow-hidden bg-gray-900"
          style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
          onMouseMove={handleMouseMove}
          onMouseUp={handleMouseUp}>
@@ -235,7 +235,7 @@ function App() {
               top: window.position.y,
               zIndex: window.zIndex,
               width: window.isFullScreen ? '100%' : width,
-              height: window.isFullScreen ? '100%' : height,
+              height: window.isFullScreen ? `calc(100% - ${taskbarHeight}px)` : height,
             }}
           >
             <div
