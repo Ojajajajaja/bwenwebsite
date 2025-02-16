@@ -135,7 +135,7 @@ function App() {
 
   return (
     <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
-         style={{ backgroundImage: 'url(./assets/background.png)' }}
+         style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
          onMouseMove={handleMouseMove}
          onMouseUp={handleMouseUp}>
       {/* Menu Bar */}
