@@ -42,12 +42,12 @@ function App() {
   }, []);
 
   const apps = [
-    { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
-    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: 800, height: 600 },
-    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
-    { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
-    { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
-    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: 800, height: 600 }
+    { icon: Finder, name: 'Finder', content: 'File Explorer', width: '80vw', height: '70vh' },
+    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: '90vw', height: '80vh' },
+    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: '80vw', height: '70vh' },
+    { icon: Settings, name: 'Settings', content: 'System Preferences', width: '80vw', height: '70vh' },
+    { icon: Music, name: 'Music', content: <LofiPlayer />, width: '40vw', height: '20vh' },
+    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: '90vw', height: '80vh' }
   ];
 
   const desktopIcons: DesktopIcon[] = [
