@@ -10,12 +10,16 @@ const JupiterSwap: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const loadJupiterTerminal = async () => {
-      if (typeof window.Jupiter !== 'undefined') {
-        new window.Jupiter.Terminal({
-          containerElement: containerRef.current,
-          integratorId: 'BabyWen-Desktop',
+    const script = document.createElement('script');
+    script.src = 'https://terminal.jup.ag/main-v2.js';
+    script.async = true;
+    
+    script.onload = () => {
+      if (containerRef.current && window.Jupiter) {
+        window.Jupiter.init({
           displayMode: 'integrated',
+          integratorId: 'BabyWen-Desktop',
+          elementId: 'jupiter-terminal',
           defaultExplorer: 'Solana Explorer',
           defaultRoute: 'swap',
           strictTokenList: false,
@@ -25,23 +29,19 @@ const JupiterSwap: React.FC = () => {
             height: '100%',
           },
         });
-      } else {
-        console.error('Jupiter Terminal not loaded');
       }
     };
 
-    const script = document.createElement('script');
-    script.src = 'https://terminal.jup.ag/main-v2.js';
-    script.async = true;
-    script.onload = loadJupiterTerminal;
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
   }, []);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+  return <div id="jupiter-terminal" ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 };
 
 export default JupiterSwap;
