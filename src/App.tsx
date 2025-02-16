@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
@@ -25,49 +25,43 @@ function App() {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const [windows, setWindows] = useState<AppWindow[]>([]);
   const [highestZIndex, setHighestZIndex] = useState(1);
-  const [menubarHeight, setMenubarHeight] = useState(0);
+  const [taskbarHeight, setTaskbarHeight] = useState(0);
   const [windowDimensions, setWindowDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight
   });
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  const menubarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const taskbar = document.getElementById('taskbar');
+    if (taskbar) {
+      setTaskbarHeight(taskbar.offsetHeight);
+    }
 
     const handleResize = () => {
       setWindowDimensions({
         width: window.innerWidth,
         height: window.innerHeight
       });
-      setIsMobile(window.innerWidth <= 768);
     };
 
     window.addEventListener('resize', handleResize);
-
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  useEffect(() => {
-    if (menubarRef.current) {
-      setMenubarHeight(menubarRef.current.offsetHeight);
-    }
-  }, [menubarRef.current]);
 
   const getResponsiveDimensions = (baseWidth: number, baseHeight: number) => {
     const aspectRatio = baseWidth / baseHeight;
     let width = Math.min(baseWidth, windowDimensions.width * 0.9);
     let height = width / aspectRatio;
 
-    if (height > windowDimensions.height * 0.7) {
-      height = windowDimensions.height * 0.7;
+    if (height > windowDimensions.height * 0.8) {
+      height = windowDimensions.height * 0.8;
       width = height * aspectRatio;
     }
 
@@ -105,6 +99,7 @@ function App() {
     }
 
     const { width, height } = getResponsiveDimensions(app.width, app.height);
+    const isChrome = app.name === 'Chrome';
     const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
@@ -112,11 +107,11 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: (windowDimensions.width - width) / 2,
-        y: (windowDimensions.height - height) / 2 + menubarHeight,
+        x: isChrome ? 0 : Math.random() * (windowDimensions.width - width),
+        y: isChrome ? 0 : Math.random() * (windowDimensions.height - height - taskbarHeight) + taskbarHeight,
       },
       content: app.content,
-      isFullScreen: false,
+      isFullScreen: isChrome,
     };
 
     setWindows([...windows, newWindow]);
@@ -158,8 +153,8 @@ function App() {
         return {
           ...w,
           position: {
-            x: Math.max(0, Math.min(e.clientX - dragOffset.x, windowDimensions.width - 100)),
-            y: Math.max(menubarHeight, Math.min(e.clientY - dragOffset.y, windowDimensions.height - 100))
+            x: e.clientX - dragOffset.x,
+            y: e.clientY - dragOffset.y
           }
         };
       }
@@ -177,15 +172,15 @@ function App() {
 
   const toggleFullScreen = (id: string) => {
     setWindows(windows.map(w => {
-      if (w.id === id) {
+      if (w.id === id && w.id === 'Chrome') {
         const app = apps.find(a => a.name === id);
         const { width, height } = getResponsiveDimensions(app?.width || 800, app?.height || 600);
         return {
           ...w,
           isFullScreen: !w.isFullScreen,
           position: !w.isFullScreen 
-            ? { x: 0, y: menubarHeight }
-            : { x: (windowDimensions.width - width) / 2, y: (windowDimensions.height - height) / 2 + menubarHeight },
+            ? { x: 0, y: 0 }
+            : { x: Math.random() * (windowDimensions.width - width), y: Math.random() * (windowDimensions.height - height) },
         };
       }
       return w;
@@ -196,18 +191,10 @@ function App() {
     <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
          style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
          onMouseMove={handleMouseMove}
-         onMouseUp={handleMouseUp}
-         onTouchMove={(e) => {
-           if (draggedWindow) {
-             const touch = e.touches[0];
-             handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
-           }
-         }}
-         onTouchEnd={handleMouseUp}>
-      {/* Menu Bar - Always visible */}
-      <div ref={menubarRef} className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5 fixed top-0 left-0 right-0 z-50">
+         onMouseUp={handleMouseUp}>
+      {/* Menu Bar */}
+      <div id="taskbar" className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center space-x-4">
-          {/* Add menu items here if needed */}
         </div>
         <div className="flex items-center space-x-4">
           <Battery className="w-4 h-4 opacity-60" />
@@ -217,8 +204,8 @@ function App() {
         </div>
       </div>
 
-      {/* Desktop Icons - Always visible */}
-      <div className="absolute top-12 left-4 space-y-4 z-10">
+      {/* Desktop Icons */}
+      <div className="absolute top-12 left-4 space-y-4">
         {desktopIcons.map((icon, index) => (
           <div
             key={index}
@@ -239,7 +226,6 @@ function App() {
       {windows.map((window) => {
         const app = apps.find(a => a.name === window.id);
         const { width, height } = getResponsiveDimensions(app?.width || 800, app?.height || 600);
-        const isChrome = window.id === 'Chrome';
         return (
           <div
             key={window.id}
@@ -249,20 +235,15 @@ function App() {
               top: window.position.y,
               zIndex: window.zIndex,
               width: window.isFullScreen ? '100%' : width,
-              height: window.isFullScreen ? `calc(100% - ${menubarHeight}px)` : height,
-              maxHeight: `calc(100% - ${menubarHeight}px)`,
+              height: window.isFullScreen ? '100%' : height,
             }}
           >
             <div
               className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
               onMouseDown={(e) => handleMouseDown(e, window.id)}
-              onTouchStart={(e) => {
-                const touch = e.touches[0];
-                handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent, window.id);
-              }}
             >
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-                {isChrome && (
+                {window.id === 'Chrome' && (
                   <button
                     onClick={() => toggleFullScreen(window.id)}
                     className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
@@ -289,9 +270,9 @@ function App() {
         );
       })}
 
-      {/* Dock - Always visible, positioned at the bottom */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-screen-lg px-4">
-        <div className="flex items-end justify-center space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
+      {/* Dock */}
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+        <div className="flex items-end space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
           {apps.map((app, index) => (
             <div key={index} className="group flex flex-col items-center relative">
               <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 
