@@ -4,15 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
-  height: 100vh;
-  width: 100vw;
+body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-}
-
-body {
   background: #111827;
   font-family: 'Source Code Pro', monospace;
 }
@@ -26,18 +21,4 @@ body {
 /* Smooth window dragging */
 * {
   user-select: none;
-}
-
-/* Ensure all content fits within viewport */
-.h-screen {
-  height: 100vh;
-}
-
-.w-screen {
-  width: 100vw;
-}
-
-/* Prevent scrolling on the main container */
-#root > div {
-  overflow: hidden;
 }
