@@ -43,7 +43,7 @@ function App() {
 
   const apps = [
     { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
-    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" />, width: 800, height: 600 },
+    { icon: Chrome, name: 'Chrome', content: <React.Suspense fallback={<div className="w-full h-full flex items-center justify-center">Loading...</div>}><iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" loading="lazy" /></React.Suspense>, width: 800, height: 600 },
     { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
     { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
     { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
