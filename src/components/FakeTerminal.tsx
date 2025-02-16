@@ -25,7 +25,7 @@ const FakeTerminal: React.FC = () => {
 
   const processCommand = (command: string) => {
     // Add user input to output
-    setOutput(prev => [...prev, { text: `$ ${command}`, type: 'input' }]);
+    setOutput(prev => [...prev, { text: `> ${command}`, type: 'input' }]);
     
     // Easter egg commands
     const easterEggs = {
@@ -85,7 +85,7 @@ const FakeTerminal: React.FC = () => {
         onSubmit={handleSubmit} 
         className="flex bg-gray-900 rounded-md p-2"
       >
-        <span className="mr-2 text-blue-400">$</span>
+        <span className="mr-2 text-blue-400">|</span>
         <input
           type="text"
           value={input}
