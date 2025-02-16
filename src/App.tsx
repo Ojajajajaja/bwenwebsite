@@ -13,11 +13,9 @@ interface Window {
 }
 
 interface DesktopIcon {
-  icon: React.ElementType | (() => JSX.Element);
+  icon: React.ElementType;
   name: string;
   url: string;
-  target: string;
-  rel: string;
 }
 
 function App() {
@@ -32,36 +30,36 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
-  const desktopIcons: DesktopIcon[] = [
-    {
-      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="40" height="40" style={{filter: 'brightness(0) invert(1)'}}/>,
-      name: 'X',
-      url: 'https://x.com/babywen_CTO',
-      target: '_blank',
-      rel: 'noopener noreferrer'
-    },
-    {
-      icon: () => <img src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" alt="Telegram" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
-      name: 'Telegram',
-      url: 'https://t.me/babywenportal',
-      target: '_blank',
-      rel: 'noopener noreferrer'
-    },
-    {
-      icon: BarChart3,
-      name: 'DexScreener',
-      url: 'https://dexscreener.com',
-      target: '_blank',
-      rel: 'noopener noreferrer'
-    },
-  ];
-
   const apps = [
     { icon: Finder, name: 'Finder', content: 'File Explorer' },
     { icon: Chrome, name: 'Chrome', content: 'Web Browser' },
     { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
     { icon: Settings, name: 'Settings', content: <JupiterSwap /> },
     { icon: Music, name: 'Music', content: <LofiPlayer /> }
+  ];
+
+  const desktopIcons: DesktopIcon[] = [
+    { 
+      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="40" height="40" style={{filter: 'brightness(0) invert(1)'}}/>,
+      name: 'X',
+      url: 'https://x.com/babywen_CTO',
+      target: '_blank',
+      rel: 'noopener noreferrer'
+    },
+    { 
+      icon: () => <img src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" alt="Telegram" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
+      name: 'Telegram',
+      url: 'https://t.me/babywenportal',
+      target: '_blank',
+      rel: 'noopener noreferrer'
+    },
+    { 
+      icon: BarChart3, 
+      name: 'DexScreener', 
+      url: 'https://dexscreener.com',
+      target: '_blank',
+      rel: 'noopener noreferrer'
+    },
   ];
 
   const openWindow = (app: typeof apps[0]) => {
@@ -141,8 +139,8 @@ function App() {
     setDraggedWindow(null);
   };
 
-  const openUrl = (url: string, target: string, rel: string) => {
-    window.open(url, target, rel);
+  const openUrl = (url: string) => {
+    window.open(url, '_blank');
   };
 
   return (
@@ -168,10 +166,10 @@ function App() {
           <div
             key={index}
             className="flex flex-col items-center cursor-pointer group"
-            onClick={() => openUrl(icon.url, icon.target, icon.rel)}
+            onClick={() => openUrl(icon.url)}
           >
             <div className="w-16 h-16 bg-black/20 rounded-xl backdrop-blur-xl flex items-center justify-center group-hover:bg-white/10 transition-all duration-200">
-              {typeof icon.icon === 'function' ? icon.icon() : <icon.icon className="w-10 h-10 text-white/90" />}
+              <icon.icon className="w-10 h-10 text-white/90" />
             </div>
             <span className="mt-1 text-xs text-white/90 bg-black/40 px-2 py-1 rounded-md backdrop-blur-xl">
               {icon.name}
@@ -242,34 +240,4 @@ function App() {
   );
 }
 
-function JupiterSwap() {
-  useEffect(() => {
-    // Charger le script Jupiter Terminal
-    const script = document.createElement('script');
-    script.src = "https://terminal.jup.ag/main-v2.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      // Nettoyer le script lors du démontage du composant
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div 
-        id="integrated-terminal" 
-        data-tokens="SOL,USDC,BONK,WEN"
-        data-default-input-token="SOL"
-        data-default-output-token="USDC"
-        data-default-slippage="1"
-        data-theme="dark"
-        style={{width: '100%', height: '100%', maxWidth: '600px', maxHeight: '800px'}}
-      ></div>
-    </div>
-  );
-}
-
 export default App;
-
