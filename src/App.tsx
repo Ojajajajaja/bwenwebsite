@@ -40,7 +40,7 @@ function App() {
 
   const desktopIcons: DesktopIcon[] = [
     { 
-      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
+      icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="40" height="40" style={{filter: 'brightness(0) invert(1)'}}/>,
       name: 'X',
       url: 'https://x.com/babywen_CTO'
     },
