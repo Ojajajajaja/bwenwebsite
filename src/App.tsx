@@ -243,18 +243,33 @@ function App() {
 }
 
 function JupiterSwap() {
+  useEffect(() => {
+    // Charger le script Jupiter Terminal
+    const script = document.createElement('script');
+    script.src = "https://terminal.jup.ag/main-v2.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Nettoyer le script lors du démontage du composant
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
-    <div className="w-full h-full">
-      <iframe
-        src="https://jup.ag/swap/SOL-USDC"
-        frameBorder="0"
-        width="100%"
-        height="100%"
-        style={{ borderRadius: '10px' }}
-        title="Jupiter Swap"
-      />
+    <div className="w-full h-full flex items-center justify-center">
+      <div 
+        id="integrated-terminal" 
+        data-tokens="SOL,USDC,BONK,WEN"
+        data-default-input-token="SOL"
+        data-default-output-token="USDC"
+        data-default-slippage="1"
+        data-theme="dark"
+        style={{width: '100%', height: '100%', maxWidth: '600px', maxHeight: '800px'}}
+      ></div>
     </div>
   );
 }
 
 export default App;
+
