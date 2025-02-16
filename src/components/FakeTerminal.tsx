@@ -24,7 +24,8 @@ const FakeTerminal: React.FC = () => {
   const processCommand = (command: string) => {
     setOutput([...output, `$ ${command}`]);
     
-    const easterEggs: { [key: string]: string | (() => void) } = {
+    // Easter egg commands
+    const easterEggs = {
       'test': 'test',
       'hello': 'Hello, BabyWen enthusiast!',
       'babywen': 'BabyWen is the future of decentralized finance!',
@@ -32,11 +33,15 @@ const FakeTerminal: React.FC = () => {
       'clear': () => setOutput([]),
     };
 
-    const response = easterEggs[command.toLowerCase()] || `Command not found: ${command}`;
+    // Obfuscated easter egg processing
+    const processEasterEgg = (cmd: string) => {
+      const result = (easterEggs as any)[cmd];
+      return typeof result === 'function' ? result() : result;
+    };
+
+    const response = processEasterEgg(command.toLowerCase()) || `Command not found: ${command}`;
     
-    if (typeof response === 'function') {
-      response();
-    } else if (response !== undefined) {
+    if (response !== undefined) {
       setOutput(prev => [...prev, response]);
     }
   };
@@ -45,11 +50,22 @@ const FakeTerminal: React.FC = () => {
     <div className="bg-transparent text-green-400 p-4 font-mono h-full flex flex-col">
       <div 
         ref={terminalRef} 
-        className="flex-grow overflow-y-auto mb-4 scrollbar-hide"
+        className="flex-grow overflow-y-auto mb-4"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
       >
+        <style>
+          {`
+            #terminal-output::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
         <div id="terminal-output">
           {output.map((line, index) => (
-            <div key={index} className="break-words">{line}</div>
+            <div key={index}>{line}</div>
           ))}
         </div>
       </div>

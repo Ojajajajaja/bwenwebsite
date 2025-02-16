@@ -52,17 +52,12 @@ const JupiterSwap: React.FC = () => {
         }
       };
 
+      // Delay initialization to ensure the element is in the DOM
       setTimeout(initJupiter, 100);
     }
   }, [scriptLoaded]);
 
-  return (
-    <div 
-      id="jupiter-terminal" 
-      ref={containerRef} 
-      style={{ width: '100%', height: '100%', overflow: 'auto' }}
-    />
-  );
+  return <div id="jupiter-terminal" ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 };
 
 export default JupiterSwap;
