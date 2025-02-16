@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3 } from 'lucide-react';
+import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, Twitter, Send, BarChart3 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
-import JupiterSwap from './components/JupiterSwap';
 
 interface Window {
   id: string;
@@ -35,7 +34,7 @@ function App() {
     { icon: Finder, name: 'Finder', content: 'File Explorer' },
     { icon: Chrome, name: 'Chrome', content: 'Web Browser' },
     { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
-    { icon: Settings, name: 'Settings', content: <JupiterSwap /> },
+    { icon: Settings, name: 'Settings', content: 'System Preferences' },
     { icon: Music, name: 'Music', content: <LofiPlayer /> }
   ];
 
@@ -43,24 +42,14 @@ function App() {
     { 
       icon: () => <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="X" width="40" height="40" style={{filter: 'brightness(0) invert(1)'}}/>,
       name: 'X',
-      url: 'https://x.com/babywen_CTO',
-      target: '_blank',
-      rel: 'noopener noreferrer'
+      url: 'https://x.com/babywen_CTO'
     },
     { 
       icon: () => <img src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" alt="Telegram" width="48" height="48" style={{filter: 'brightness(0) invert(1)'}}/>,
       name: 'Telegram',
-      url: 'https://t.me/babywenportal',
-      target: '_blank',
-      rel: 'noopener noreferrer'
+      url: 'https://t.me/babywenportal'
     },
-    { 
-      icon: BarChart3, 
-      name: 'DexScreener', 
-      url: 'https://dexscreener.com',
-      target: '_blank',
-      rel: 'noopener noreferrer'
-    },
+    { icon: BarChart3, name: 'DexScreener', url: 'https://dexscreener.com' },
   ];
 
   const openWindow = (app: typeof apps[0]) => {
@@ -186,7 +175,7 @@ function App() {
           className="absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden"
           style={{
             width: Math.min(window.innerWidth * 0.8, 800) + 'px',
-            height: Math.min(window.innerHeight * 0.8, 700) + 'px', // Increased height
+            height: Math.min(window.innerHeight * 0.7, 600) + 'px',
             left: window.position.x,
             top: window.position.y,
             zIndex: window.zIndex,
@@ -209,7 +198,7 @@ function App() {
               <span className="text-sm font-medium">{window.title}</span>
             </div>
           </div>
-          <div className="p-4 text-white/90 h-[calc(100%-2rem)] overflow-auto"> {/* Added overflow-auto */}
+          <div className="p-4 text-white/90 h-[calc(100%-2rem)]">
             {window.content}
           </div>
         </div>
