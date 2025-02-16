@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
@@ -25,7 +25,14 @@ function App() {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const [windows, setWindows] = useState<AppWindow[]>([]);
   const [highestZIndex, setHighestZIndex] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
+  const [menubarHeight, setMenubarHeight] = useState(0);
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const menubarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -33,10 +40,13 @@ function App() {
     }, 1000);
 
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+      setIsMobile(window.innerWidth <= 768);
     };
 
-    handleResize();
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -44,6 +54,25 @@ function App() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (menubarRef.current) {
+      setMenubarHeight(menubarRef.current.offsetHeight);
+    }
+  }, [menubarRef.current]);
+
+  const getResponsiveDimensions = (baseWidth: number, baseHeight: number) => {
+    const aspectRatio = baseWidth / baseHeight;
+    let width = Math.min(baseWidth, windowDimensions.width * 0.9);
+    let height = width / aspectRatio;
+
+    if (height > windowDimensions.height * 0.7) {
+      height = windowDimensions.height * 0.7;
+      width = height * aspectRatio;
+    }
+
+    return { width, height };
+  };
 
   const apps = [
     { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
@@ -68,13 +97,14 @@ function App() {
     { icon: BarChart3, name: 'DexScreener', url: 'https://dexscreener.com' },
   ];
 
-  const openWindow = useCallback((app: typeof apps[0]) => {
+  const openWindow = (app: typeof apps[0]) => {
     const existingWindow = windows.find(w => w.id === app.name);
     if (existingWindow) {
       bringToFront(existingWindow.id);
       return;
     }
 
+    const { width, height } = getResponsiveDimensions(app.width, app.height);
     const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
@@ -82,66 +112,100 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: Math.random() * (window.innerWidth - 300),
-        y: Math.random() * (window.innerHeight - 300),
+        x: (windowDimensions.width - width) / 2,
+        y: (windowDimensions.height - height) / 2 + menubarHeight,
       },
       content: app.content,
       isFullScreen: false,
     };
 
-    setWindows(prev => [...prev, newWindow]);
-    setHighestZIndex(prev => prev + 1);
-  }, [windows, highestZIndex]);
+    setWindows([...windows, newWindow]);
+    setHighestZIndex(highestZIndex + 1);
+  };
 
-  const closeWindow = useCallback((id: string) => {
-    setWindows(prev => prev.filter(w => w.id !== id));
-  }, []);
+  const closeWindow = (id: string) => {
+    setWindows(windows.filter(w => w.id !== id));
+  };
 
-  const bringToFront = useCallback((id: string) => {
-    setWindows(prev => prev.map(w => ({
+  const bringToFront = (id: string) => {
+    setWindows(windows.map(w => ({
       ...w,
       zIndex: w.id === id ? highestZIndex + 1 : w.zIndex
     })));
-    setHighestZIndex(prev => prev + 1);
-  }, [highestZIndex]);
+    setHighestZIndex(highestZIndex + 1);
+  };
 
-  const handleWindowMove = useCallback((id: string, deltaX: number, deltaY: number) => {
-    setWindows(prev => prev.map(w => {
-      if (w.id === id) {
+  const [draggedWindow, setDraggedWindow] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent, windowId: string) => {
+    const window = windows.find(w => w.id === windowId);
+    if (!window || window.isFullScreen) return;
+
+    bringToFront(windowId);
+    setDraggedWindow(windowId);
+    setDragOffset({
+      x: e.clientX - window.position.x,
+      y: e.clientY - window.position.y
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!draggedWindow) return;
+
+    setWindows(windows.map(w => {
+      if (w.id === draggedWindow) {
         return {
           ...w,
           position: {
-            x: w.position.x + deltaX,
-            y: w.position.y + deltaY
+            x: Math.max(0, Math.min(e.clientX - dragOffset.x, windowDimensions.width - 100)),
+            y: Math.max(menubarHeight, Math.min(e.clientY - dragOffset.y, windowDimensions.height - 100))
           }
         };
       }
       return w;
     }));
-  }, []);
+  };
 
-  const toggleFullScreen = useCallback((id: string) => {
-    setWindows(prev => prev.map(w => {
+  const handleMouseUp = () => {
+    setDraggedWindow(null);
+  };
+
+  const openUrl = (url: string) => {
+    window.open(url, '_blank');
+  };
+
+  const toggleFullScreen = (id: string) => {
+    setWindows(windows.map(w => {
       if (w.id === id) {
+        const app = apps.find(a => a.name === id);
+        const { width, height } = getResponsiveDimensions(app?.width || 800, app?.height || 600);
         return {
           ...w,
           isFullScreen: !w.isFullScreen,
-          position: !w.isFullScreen ? { x: 0, y: 0 } : w.position,
+          position: !w.isFullScreen 
+            ? { x: 0, y: menubarHeight }
+            : { x: (windowDimensions.width - width) / 2, y: (windowDimensions.height - height) / 2 + menubarHeight },
         };
       }
       return w;
     }));
-  }, []);
-
-  const openUrl = useCallback((url: string) => {
-    window.open(url, '_blank');
-  }, []);
+  };
 
   return (
     <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
-         style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}>
+         style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
+         onMouseMove={handleMouseMove}
+         onMouseUp={handleMouseUp}
+         onTouchMove={(e) => {
+           if (draggedWindow) {
+             const touch = e.touches[0];
+             handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent);
+           }
+         }}
+         onTouchEnd={handleMouseUp}>
       {/* Menu Bar */}
-      <div className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5">
+      <div ref={menubarRef} className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5 fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center space-x-4">
         </div>
         <div className="flex items-center space-x-4">
@@ -173,21 +237,62 @@ function App() {
       )}
 
       {/* Windows */}
-      {windows.map((window) => (
-        <WindowComponent
-          key={window.id}
-          window={window}
-          isMobile={isMobile}
-          onClose={closeWindow}
-          onBringToFront={bringToFront}
-          onMove={handleWindowMove}
-          onToggleFullScreen={toggleFullScreen}
-        />
-      ))}
+      {windows.map((window) => {
+        const app = apps.find(a => a.name === window.id);
+        const { width, height } = getResponsiveDimensions(app?.width || 800, app?.height || 600);
+        const isChrome = window.id === 'Chrome';
+        return (
+          <div
+            key={window.id}
+            className={`absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden`}
+            style={{
+              left: window.position.x,
+              top: window.position.y,
+              zIndex: window.zIndex,
+              width: window.isFullScreen ? '100%' : width,
+              height: window.isFullScreen ? `calc(100% - ${menubarHeight}px)` : height,
+              maxHeight: `calc(100% - ${menubarHeight}px)`,
+            }}
+          >
+            <div
+              className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
+              onMouseDown={(e) => handleMouseDown(e, window.id)}
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY } as React.MouseEvent, window.id);
+              }}
+            >
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+                {isChrome && (
+                  <button
+                    onClick={() => toggleFullScreen(window.id)}
+                    className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
+                  >
+                    {window.isFullScreen ? <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" /> : <Maximize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />}
+                  </button>
+                )}
+                <button
+                  onClick={() => closeWindow(window.id)}
+                  className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
+                >
+                  <X className="w-4 h-4 text-white/70 group-hover:text-white/90" />
+                </button>
+              </div>
+              <div className="flex items-center space-x-2 text-white/80">
+                <window.icon className="w-4 h-4" />
+                <span className="text-sm font-medium">{window.title}</span>
+              </div>
+            </div>
+            <div className="h-[calc(100%-2rem)] overflow-auto">
+              {window.content}
+            </div>
+          </div>
+        );
+      })}
 
       {/* Dock */}
-      <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 ${isMobile ? 'w-full px-4' : ''}`}>
-        <div className={`flex items-end ${isMobile ? 'justify-between' : 'space-x-2'} bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl`}>
+      <div className={`fixed ${isMobile ? 'bottom-4' : 'bottom-10'} left-1/2 transform -translate-x-1/2 z-40`}>
+        <div className="flex items-end space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
           {apps.map((app, index) => (
             <div key={index} className="group flex flex-col items-center relative">
               <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 
@@ -210,102 +315,5 @@ function App() {
     </div>
   );
 }
-
-interface WindowComponentProps {
-  window: AppWindow;
-  isMobile: boolean;
-  onClose: (id: string) => void;
-  onBringToFront: (id: string) => void;
-  onMove: (id: string, deltaX: number, deltaY: number) => void;
-  onToggleFullScreen: (id: string) => void;
-}
-
-const WindowComponent: React.FC<WindowComponentProps> = React.memo(({ window, isMobile, onClose, onBringToFront, onMove, onToggleFullScreen }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (window.isFullScreen) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - window.position.x, y: e.clientY - window.position.y });
-    onBringToFront(window.id);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - dragStart.x - window.position.x;
-    const deltaY = e.clientY - dragStart.y - window.position.y;
-    onMove(window.id, deltaX, deltaY);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (window.isFullScreen) return;
-    const touch = e.touches[0];
-    setIsDragging(true);
-    setDragStart({ x: touch.clientX - window.position.x, y: touch.clientY - window.position.y });
-    onBringToFront(window.id);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - dragStart.x - window.position.x;
-    const deltaY = touch.clientY - dragStart.y - window.position.y;
-    onMove(window.id, deltaX, deltaY);
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
-
-  return (
-    <div
-      className={`absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden`}
-      style={{
-        left: window.isFullScreen ? 0 : window.position.x,
-        top: window.isFullScreen ? 0 : window.position.y,
-        zIndex: window.zIndex,
-        width: window.isFullScreen ? '100%' : isMobile ? '90%' : '600px',
-        height: window.isFullScreen ? '100%' : isMobile ? '70%' : '400px',
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div
-        className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
-      >
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-          <button
-            onClick={() => onToggleFullScreen(window.id)}
-            className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
-          >
-            {window.isFullScreen ? <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" /> : <Maximize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />}
-          </button>
-          <button
-            onClick={() => onClose(window.id)}
-            className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
-          >
-            <X className="w-4 h-4 text-white/70 group-hover:text-white/90" />
-          </button>
-        </div>
-        <div className="flex items-center space-x-2 text-white/80">
-          <window.icon className="w-4 h-4" />
-          <span className="text-sm font-medium">{window.title}</span>
-        </div>
-      </div>
-      <div className="h-[calc(100%-2rem)] overflow-auto">
-        {window.content}
-      </div>
-    </div>
-  );
-});
 
 export default App;
