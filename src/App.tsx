@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
+import JupiterSwap from './components/JupiterSwap';
 
 interface Window {
   id: string;
