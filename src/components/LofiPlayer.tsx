@@ -7,64 +7,23 @@ const LofiPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-
-  const initializeAudio = async () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const audio = new Audio();
-      audio.crossOrigin = "anonymous";
-      audio.src = 'https://live.hunter.fm/lofi_high';
-      audio.loop = true;
-      audio.volume = volume;
-      audioRef.current = audio;
-
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      sourceRef.current = audioContextRef.current.createMediaElementSource(audio);
-      sourceRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(audioContextRef.current.destination);
-      analyserRef.current.fftSize = 256;
-    }
-  };
 
   useEffect(() => {
-    if (isPlaying) {
-      initializeAudio().then(() => {
-        if (audioContextRef.current && audioRef.current) {
-          audioContextRef.current.resume().then(() => {
-            audioRef.current?.play().catch(error => {
-              console.error("Error playing audio:", error);
-              setIsPlaying(false);
-            });
-          });
-        }
-      });
-
-      if (analyserRef.current) {
-        const bufferLength = analyserRef.current.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-
-        const draw = () => {
-          // ... existing visualization code ...
-        };
-
-        draw();
-      }
-    }
+    const audio = new Audio('https://live.hunter.fm/lofi_high');
+    audio.loop = true;
+    audio.volume = volume;
+    audioRef.current = audio;
 
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current = null;
       }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying]);
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -73,26 +32,61 @@ const LofiPlayer: React.FC = () => {
   }, [volume]);
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
   };
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    gradient.addColorStop(0, '#8A2387');
+    gradient.addColorStop(0.5, '#E94057');
+    gradient.addColorStop(1, '#F27121');
+
+    const drawWave = (time: number) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+
+      for (let i = 0; i <= canvas.width; i++) {
+        const y = Math.sin((i + time) * 0.05) * 20 + canvas.height / 2;
+        ctx.lineTo(i, y);
+      }
+
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      animationRef.current = requestAnimationFrame((t) => drawWave(t * 0.05));
+    };
+
+    drawWave(0);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative bg-black/60 backdrop-blur-lg p-4 rounded-lg w-full max-w-md overflow-hidden">
-      <div 
-        className="absolute inset-0 opacity-50"
-        style={{
-          backgroundImage: 'url(https://media1.giphy.com/media/26zzgaDnp9HgPX1uw/giphy.gif?cid=6c09b9521sm8b7ov8yl3wd6j9svpouy3caf33fbb201ylm41&ep=v1_gifs_search&rid=giphy.gif&ct=g)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-50" />
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-white text-lg font-semibold">Lofi Radio</h2>
