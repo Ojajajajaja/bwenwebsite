@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, Twitter, Send, BarChart3 } from 'lucide-react';
+import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 
-interface Window {
+interface AppWindow {
   id: string;
   title: string;
   icon: React.ElementType;
@@ -20,7 +20,7 @@ interface DesktopIcon {
 
 function App() {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
-  const [windows, setWindows] = useState<Window[]>([]);
+  const [windows, setWindows] = useState<AppWindow[]>([]);
   const [highestZIndex, setHighestZIndex] = useState(1);
 
   React.useEffect(() => {
@@ -59,12 +59,12 @@ function App() {
       return;
     }
 
-    const windowWidth = Math.min(window.innerWidth * 0.8, 800);
-    const windowHeight = Math.min(window.innerHeight * 0.7, 600);
-    const centerX = (window.innerWidth - windowWidth) / 2;
-    const centerY = (window.innerHeight - windowHeight) / 2;
+    const windowWidth = Math.min(globalThis.innerWidth * 0.8, 800);
+    const windowHeight = Math.min(globalThis.innerHeight * 0.7, 600);
+    const centerX = (globalThis.innerWidth - windowWidth) / 2;
+    const centerY = (globalThis.innerHeight - windowHeight) / 2;
 
-    const newWindow: Window = {
+    const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
       icon: app.icon,
@@ -174,8 +174,8 @@ function App() {
           key={window.id}
           className="absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden"
           style={{
-            width: Math.min(window.innerWidth * 0.8, 800) + 'px',
-            height: Math.min(window.innerHeight * 0.7, 600) + 'px',
+            width: Math.min(globalThis.innerWidth * 0.8, 800) + 'px',
+            height: Math.min(globalThis.innerHeight * 0.7, 600) + 'px',
             left: window.position.x,
             top: window.position.y,
             zIndex: window.zIndex,
