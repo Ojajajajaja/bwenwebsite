@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import JupiterSwap from './components/JupiterSwap';
 
@@ -11,6 +11,7 @@ interface AppWindow {
   zIndex: number;
   position: { x: number; y: number };
   content: React.ReactNode;
+  isFullScreen?: boolean;
 }
 
 interface DesktopIcon {
@@ -23,17 +24,25 @@ function App() {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const [windows, setWindows] = useState<AppWindow[]>([]);
   const [highestZIndex, setHighestZIndex] = useState(1);
+  const [taskbarHeight, setTaskbarHeight] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const taskbar = document.getElementById('taskbar');
+    if (taskbar) {
+      setTaskbarHeight(taskbar.offsetHeight);
+    }
+  }, []);
+
   const apps = [
     { icon: Finder, name: 'Finder', content: 'File Explorer' },
-    { icon: Chrome, name: 'Chrome', content: 'Web Browser' },
+    { icon: Chrome, name: 'Chrome', content: <iframe src="https://docs.babywen.io/" className="w-full h-full border-none" title="BabyWen Documentation" /> },
     { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
     { icon: Settings, name: 'Settings', content: 'System Preferences' },
     { icon: Music, name: 'Music', content: <LofiPlayer /> },
@@ -61,6 +70,7 @@ function App() {
       return;
     }
 
+    const isChrome = app.name === 'Chrome';
     const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
@@ -68,10 +78,11 @@ function App() {
       isOpen: true,
       zIndex: highestZIndex + 1,
       position: {
-        x: Math.random() * (window.innerWidth - 400),
-        y: Math.random() * (window.innerHeight - 300)
+        x: isChrome ? 0 : Math.random() * (window.innerWidth - 400),
+        y: isChrome ? taskbarHeight : Math.random() * (window.innerHeight - 300 - taskbarHeight) + taskbarHeight,
       },
-      content: app.content
+      content: app.content,
+      isFullScreen: isChrome,
     };
 
     setWindows([...windows, newWindow]);
@@ -95,7 +106,7 @@ function App() {
 
   const handleMouseDown = (e: React.MouseEvent, windowId: string) => {
     const window = windows.find(w => w.id === windowId);
-    if (!window) return;
+    if (!window || window.isFullScreen) return;
 
     bringToFront(windowId);
     setDraggedWindow(windowId);
@@ -130,13 +141,26 @@ function App() {
     window.open(url, '_blank');
   };
 
+  const toggleFullScreen = (id: string) => {
+    setWindows(windows.map(w => {
+      if (w.id === id) {
+        return {
+          ...w,
+          isFullScreen: !w.isFullScreen,
+          position: w.isFullScreen ? { x: Math.random() * (window.innerWidth - 400), y: Math.random() * (window.innerHeight - 300 - taskbarHeight) + taskbarHeight } : { x: 0, y: taskbarHeight },
+        };
+      }
+      return w;
+    }));
+  };
+
   return (
     <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
          style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
          onMouseMove={handleMouseMove}
          onMouseUp={handleMouseUp}>
       {/* Menu Bar */}
-      <div className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5">
+      <div id="taskbar" className="h-8 bg-black/40 backdrop-blur-2xl text-white px-4 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center space-x-4">
         </div>
         <div className="flex items-center space-x-4">
@@ -169,18 +193,26 @@ function App() {
       {windows.map((window) => (
         <div
           key={window.id}
-          className="absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden"
+          className={`absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden ${window.isFullScreen ? 'w-full' : ''}`}
           style={{
             left: window.position.x,
             top: window.position.y,
             zIndex: window.zIndex,
+            width: window.isFullScreen ? '100%' : 'auto',
+            height: window.isFullScreen ? `calc(100% - ${taskbarHeight}px)` : 'auto',
           }}
         >
           <div
             className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
             onMouseDown={(e) => handleMouseDown(e, window.id)}
           >
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+              <button
+                onClick={() => toggleFullScreen(window.id)}
+                className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
+              >
+                {window.isFullScreen ? <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" /> : <Maximize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />}
+              </button>
               <button
                 onClick={() => closeWindow(window.id)}
                 className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
@@ -193,7 +225,7 @@ function App() {
               <span className="text-sm font-medium">{window.title}</span>
             </div>
           </div>
-          <div className="p-4 text-white/90">
+          <div className={`p-4 text-white/90 ${window.isFullScreen ? 'h-[calc(100%-2rem)]' : ''}`}>
             {window.content}
           </div>
         </div>
