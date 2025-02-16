@@ -10,14 +10,6 @@ body {
   overflow: hidden;
   background: #111827;
   font-family: 'Source Code Pro', monospace;
-  touch-action: none;
-  overscroll-behavior: none;
-}
-
-/* Prevent default touch behaviors */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 /* Custom animations for dock icons */
@@ -29,17 +21,4 @@ html, body {
 /* Smooth window dragging */
 * {
   user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-
-/* Mobile-specific touch improvements */
-@media (max-width: 768px) {
-  .touch-pan-y {
-    touch-action: pan-y;
-  }
-
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
 }
