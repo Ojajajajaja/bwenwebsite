@@ -289,30 +289,28 @@ function App() {
         );
       })}
 
-      {/* Dock - Only visible on larger screens */}
-      {!isMobile && (
-        <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-40">
-          <div className="flex items-end space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
-            {apps.map((app, index) => (
-              <div key={index} className="group flex flex-col items-center relative">
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 
-                               text-white/90 text-xs absolute -top-8 backdrop-blur-2xl px-2 py-1 rounded-md bg-black/40
-                               font-medium whitespace-nowrap">
-                  {app.name}
-                </span>
-                <div
-                  onClick={() => openWindow(app)}
-                  className="w-12 h-12 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-2xl 
-                            hover:bg-white/10 transition-all duration-200 transform hover:scale-110 hover:-translate-y-2 cursor-pointer
-                            border border-white/5"
-                >
-                  <app.icon className="w-8 h-8 text-white/90" />
-                </div>
+      {/* Dock - Always visible, positioned at the bottom */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-30 w-full max-w-screen-lg px-4">
+        <div className="flex items-end justify-center space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
+          {apps.map((app, index) => (
+            <div key={index} className="group flex flex-col items-center relative">
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 
+                             text-white/90 text-xs absolute -top-8 backdrop-blur-2xl px-2 py-1 rounded-md bg-black/40
+                             font-medium whitespace-nowrap">
+                {app.name}
+              </span>
+              <div
+                onClick={() => openWindow(app)}
+                className="w-12 h-12 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-2xl 
+                          hover:bg-white/10 transition-all duration-200 transform hover:scale-110 hover:-translate-y-2 cursor-pointer
+                          border border-white/5"
+              >
+                <app.icon className="w-8 h-8 text-white/90" />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
