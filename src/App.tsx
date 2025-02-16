@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X } from 'lucide-react';
+import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, Twitter, Send, BarChart3 } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 
 interface Window {
@@ -10,6 +10,12 @@ interface Window {
   zIndex: number;
   position: { x: number; y: number };
   content: React.ReactNode;
+}
+
+interface DesktopIcon {
+  icon: React.ElementType;
+  name: string;
+  url: string;
 }
 
 function App() {
@@ -30,6 +36,12 @@ function App() {
     { icon: Terminal, name: 'Terminal', content: 'Command Line Interface' },
     { icon: Settings, name: 'Settings', content: 'System Preferences' },
     { icon: Music, name: 'Music', content: <LofiPlayer /> }
+  ];
+
+  const desktopIcons: DesktopIcon[] = [
+    { icon: Twitter, name: 'X.com', url: 'https://x.com/babywenCTO' },
+    { icon: Send, name: 'Telegram', url: 'https://t.me/babywenportal' },
+    { icon: BarChart3, name: 'DexScreener', url: 'https://dexscreener.com' },
   ];
 
   const openWindow = (app: typeof apps[0]) => {
@@ -109,6 +121,10 @@ function App() {
     setDraggedWindow(null);
   };
 
+  const openUrl = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
          style={{ backgroundImage: 'url(./assets/background.png)' }}
@@ -124,6 +140,24 @@ function App() {
           <Search className="w-4 h-4 opacity-60" />
           <span className="opacity-80 font-medium">{currentTime}</span>
         </div>
+      </div>
+
+      {/* Desktop Icons */}
+      <div className="absolute top-12 left-4 space-y-4">
+        {desktopIcons.map((icon, index) => (
+          <div
+            key={index}
+            className="flex flex-col items-center cursor-pointer group"
+            onClick={() => openUrl(icon.url)}
+          >
+            <div className="w-16 h-16 bg-black/20 rounded-xl backdrop-blur-xl flex items-center justify-center group-hover:bg-white/10 transition-all duration-200">
+              <icon.icon className="w-10 h-10 text-white/90" />
+            </div>
+            <span className="mt-1 text-xs text-white/90 bg-black/40 px-2 py-1 rounded-md backdrop-blur-xl">
+              {icon.name}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Windows */}
