@@ -5,3 +5,8 @@ By default, this template supports JSX syntax with Tailwind CSS classes, React h
 Use icons from lucide-react for logos.
 
 Use stock photos from unsplash where appropriate, only valid URLs you know exist. Do not download the images, only link to them in image tags.
+
+this project is a website simulating a classic computer desktop, in a macOS-style environment 
+it contains a dock at the bottom, desktop shortcut icons and a taskbar
+
+You must always insert your new code into the old one, never giving the user only the modifications. The code must be operational every time, without user intervention.

@@ -83,7 +83,7 @@ const LofiPlayer: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-black/60 backdrop-blur-lg p-4 rounded-lg w-full max-w-md overflow-hidden">
+    <div className="relative bg-black/60 backdrop-blur-lg p-4 rounded-b-lg w-full max-w-md overflow-hidden">
       <div 
         className="absolute inset-0 opacity-50"
         style={{
