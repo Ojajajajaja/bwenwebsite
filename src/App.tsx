@@ -235,7 +235,7 @@ function App() {
         return (
           <div
             key={window.id}
-            className={`absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden`}
+            className={`absolute bg-black/40 backdrop-blur-2xl rounded-b-lg shadow-2xl border border-white/5 overflow-hidden`}
             style={{
               left: window.position.x,
               top: window.position.y,
