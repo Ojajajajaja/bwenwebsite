@@ -192,7 +192,7 @@ function App() {
   return (
     <div 
       className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
-      style={{ backgroundImage: 'url(https://i.imgur.com/GFEuEqn.png)' }}
+      style={{ backgroundImage: 'url(https://i.imgur.com/168l3G5.png)' }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
