@@ -192,7 +192,7 @@ function App() {
   return (
     <div 
       className="h-screen w-screen bg-cover bg-center relative overflow-hidden bg-gray-900"
-      style={{ backgroundImage: 'url(https://www.emana.io/wp-content/uploads/2021/02/Purple-and-Blue-Space-4k-Ultra-HD-Wallpaper-Background--scaled.jpg)' }}
+      style={{ backgroundImage: 'url(https://i.imgur.com/GFEuEqn.png)' }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
