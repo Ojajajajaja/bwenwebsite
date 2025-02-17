@@ -55,8 +55,8 @@ function App() {
       icon: () => <img 
         src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" 
         alt="X" 
-        width="40" 
-        height="40" 
+        width="36" 
+        height="36" 
         style={{filter: 'brightness(0) invert(1)'}}
       />,
       name: 'X',
