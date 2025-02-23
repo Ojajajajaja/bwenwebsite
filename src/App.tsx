@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2, Book } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
-import JupiterSwap from './components/JupiterSwap';
 import FakeTerminal from './components/FakeTerminal';
 import "@jup-ag/terminal/css";
 
@@ -47,7 +46,6 @@ function App() {
     { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
     { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
     { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
-    { icon: BarChart3, name: 'Jupiter', content: <JupiterSwap />, width: 800, height: 600 }
   ];
 
   const desktopIcons: DesktopIcon[] = [
@@ -179,9 +177,9 @@ function App() {
           isFullScreen: !w.isFullScreen,
           position: !w.isFullScreen 
             ? { x: 0, y: 0 }
-            : { 
-                x: (window.innerWidth - (w.isFullScreen ? window.innerWidth : w.width || 800)) / 2,
-                y: (window.innerHeight - (w.isFullScreen ? window.innerHeight : w.height || 600)) / 2 
+            : {
+                x: (window.innerWidth - 800) / 2,
+                y: (window.innerHeight - 600) / 2
               },
         };
       }
