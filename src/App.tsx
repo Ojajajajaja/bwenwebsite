@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Book } from 'lucide-react';
+import { Chrome, Terminal, Music, Battery, Wifi, Search, X, BarChart3, Minus, Book } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import FakeTerminal from './components/FakeTerminal';
 import "@jup-ag/terminal/css";
@@ -82,7 +82,8 @@ function App() {
     setWindows(windows.filter(w => w.id !== id));
   };
 
-  const minimizeWindow = (id: string) => {
+  const minimizeWindow = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     setWindows(windows.map(w => 
       w.id === id 
         ? { ...w, isMinimized: true }
@@ -183,9 +184,7 @@ function App() {
       icon: BarChart3, 
       name: 'DexScreener', 
       action: () => openUrl('https://dexscreener.com')
-    },
-    { icon: Finder, name: 'Finder', action: () => {} },
-    { icon: Settings, name: 'Settings', action: () => {} },
+    }
   ];
 
   return (
@@ -248,23 +247,26 @@ function App() {
               className="h-8 bg-black/40 backdrop-blur-2xl flex items-center justify-between px-3 cursor-move relative"
               onMouseDown={(e) => handleMouseDown(e, window.id)}
             >
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+              <div className="flex items-center space-x-2 text-white/80">
+                <window.icon className="w-4 h-4" />
+                <span className="text-sm font-medium">{window.title}</span>
+              </div>
+              <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => minimizeWindow(window.id)}
+                  onClick={(e) => minimizeWindow(window.id, e)}
                   className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
                 >
-                  <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />
+                  <Minus className="w-4 h-4 text-white/70 group-hover:text-white/90" />
                 </button>
                 <button
-                  onClick={() => closeWindow(window.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeWindow(window.id);
+                  }}
                   className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
                 >
                   <X className="w-4 h-4 text-white/70 group-hover:text-white/90" />
                 </button>
-              </div>
-              <div className="flex items-center space-x-2 text-white/80">
-                <window.icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{window.title}</span>
               </div>
             </div>
             <div className="h-[calc(100%-2rem)] overflow-auto">
