@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Maximize2, Book } from 'lucide-react';
+import { Chrome, Cylinder as Finder, Terminal, Settings, Music, Battery, Wifi, Search, X, BarChart3, Minimize2, Book } from 'lucide-react';
 import LofiPlayer from './components/LofiPlayer';
 import FakeTerminal from './components/FakeTerminal';
 import "@jup-ag/terminal/css";
@@ -9,16 +9,16 @@ interface AppWindow {
   title: string;
   icon: React.ElementType;
   isOpen: boolean;
+  isMinimized: boolean;
   zIndex: number;
   position: { x: number; y: number };
   content: React.ReactNode;
-  isFullScreen: boolean;
 }
 
 interface DesktopIcon {
   icon: React.ElementType | (() => JSX.Element);
   name: string;
-  url: string;
+  action: () => void;
 }
 
 function App() {
@@ -41,76 +41,37 @@ function App() {
     }
   }, []);
 
-  const apps = [
-    { icon: Finder, name: 'Finder', content: 'File Explorer', width: 600, height: 400 },
-    { icon: Terminal, name: 'Terminal', content: <FakeTerminal />, width: 600, height: 400 },
-    { icon: Settings, name: 'Settings', content: 'System Preferences', width: 600, height: 400 },
-    { icon: Music, name: 'Music', content: <LofiPlayer />, width: 300, height: 145 },
-  ];
-
-  const desktopIcons: DesktopIcon[] = [
-    { 
-      icon: () => <img 
-        src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" 
-        alt="X" 
-        width="36" 
-        height="36" 
-        style={{filter: 'brightness(0) invert(1)'}}
-      />,
-      name: 'X',
-      url: 'https://x.com/babywen_CTO'
-    },
-    { 
-      icon: () => <img 
-        src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" 
-        alt="Telegram" 
-        width="48" 
-        height="48" 
-        style={{filter: 'brightness(0) invert(1)'}}
-      />,
-      name: 'Telegram',
-      url: 'https://t.me/babywenportal'
-    },
-    { 
-      icon: BarChart3, 
-      name: 'DexScreener', 
-      url: 'https://dexscreener.com' 
-    },
-    { 
-      icon: Book, 
-      name: 'Docs', 
-      url: 'https://docs.babywen.io' 
-    }
-  ];
-
-  const openWindow = (app: typeof apps[0]) => {
+  const openWindow = (app: { name: string; icon: React.ElementType; content: React.ReactNode }) => {
     const existingWindow = windows.find(w => w.id === app.name);
     if (existingWindow) {
-      bringToFront(existingWindow.id);
+      if (existingWindow.isMinimized) {
+        setWindows(windows.map(w => 
+          w.id === app.name 
+            ? { ...w, isMinimized: false, zIndex: highestZIndex + 1 }
+            : w
+        ));
+        setHighestZIndex(highestZIndex + 1);
+      } else {
+        bringToFront(existingWindow.id);
+      }
       return;
     }
 
-    // Calculate centered position
-    const windowWidth = app.width;
-    const windowHeight = app.height;
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-
-    const centerX = (screenWidth - windowWidth) / 2;
-    const centerY = (screenHeight - windowHeight) / 2 + taskbarHeight / 2;
 
     const newWindow: AppWindow = {
       id: app.name,
       title: app.name,
       icon: app.icon,
       isOpen: true,
+      isMinimized: false,
       zIndex: highestZIndex + 1,
       position: {
-        x: centerX,
-        y: centerY,
+        x: (screenWidth - 600) / 2,
+        y: (screenHeight - 400) / 2 + taskbarHeight / 2,
       },
       content: app.content,
-      isFullScreen: false,
     };
 
     setWindows([...windows, newWindow]);
@@ -119,6 +80,14 @@ function App() {
 
   const closeWindow = (id: string) => {
     setWindows(windows.filter(w => w.id !== id));
+  };
+
+  const minimizeWindow = (id: string) => {
+    setWindows(windows.map(w => 
+      w.id === id 
+        ? { ...w, isMinimized: true }
+        : w
+    ));
   };
 
   const bringToFront = (id: string) => {
@@ -134,7 +103,7 @@ function App() {
 
   const handleMouseDown = (e: React.MouseEvent, windowId: string) => {
     const window = windows.find(w => w.id === windowId);
-    if (!window || window.isFullScreen) return;
+    if (!window) return;
 
     bringToFront(windowId);
     setDraggedWindow(windowId);
@@ -169,23 +138,55 @@ function App() {
     window.open(url, '_blank');
   };
 
-  const toggleFullScreen = (id: string) => {
-    setWindows(windows.map(w => {
-      if (w.id === id) {
-        return {
-          ...w,
-          isFullScreen: !w.isFullScreen,
-          position: !w.isFullScreen 
-            ? { x: 0, y: 0 }
-            : {
-                x: (window.innerWidth - 800) / 2,
-                y: (window.innerHeight - 600) / 2
-              },
-        };
-      }
-      return w;
-    }));
-  };
+  const desktopIcons: DesktopIcon[] = [
+    { 
+      icon: Terminal,
+      name: 'Terminal',
+      action: () => openWindow({ name: 'Terminal', icon: Terminal, content: <FakeTerminal /> })
+    },
+    { 
+      icon: Music,
+      name: 'Music',
+      action: () => openWindow({ name: 'Music', icon: Music, content: <LofiPlayer /> })
+    },
+    { 
+      icon: Book, 
+      name: 'Docs', 
+      action: () => openUrl('https://docs.babywen.io')
+    }
+  ];
+
+  const dockIcons = [
+    { 
+      icon: () => <img 
+        src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" 
+        alt="X" 
+        width="36" 
+        height="36" 
+        style={{filter: 'brightness(0) invert(1)'}}
+      />,
+      name: 'X',
+      action: () => openUrl('https://x.com/babywen_CTO')
+    },
+    { 
+      icon: () => <img 
+        src="https://www.svgviewer.dev/static-svgs/406050/social-telegram.svg" 
+        alt="Telegram" 
+        width="48" 
+        height="48" 
+        style={{filter: 'brightness(0) invert(1)'}}
+      />,
+      name: 'Telegram',
+      action: () => openUrl('https://t.me/babywenportal')
+    },
+    { 
+      icon: BarChart3, 
+      name: 'DexScreener', 
+      action: () => openUrl('https://dexscreener.com')
+    },
+    { icon: Finder, name: 'Finder', action: () => {} },
+    { icon: Settings, name: 'Settings', action: () => {} },
+  ];
 
   return (
     <div 
@@ -215,7 +216,7 @@ function App() {
           <div
             key={index}
             className="flex flex-col items-center cursor-pointer group"
-            onClick={() => openUrl(icon.url)}
+            onClick={icon.action}
           >
             <div className="w-16 h-16 bg-black/20 rounded-xl backdrop-blur-xl flex items-center justify-center group-hover:bg-white/10 transition-all duration-200">
               {typeof icon.icon === 'function' ? icon.icon() : <icon.icon className="w-10 h-10 text-white/90" />}
@@ -228,18 +229,19 @@ function App() {
       </div>
 
       {/* Windows */}
-      {windows.map((window) => {
-        const app = apps.find(a => a.name === window.id);
-        return (
+      {windows.map((window) => (
+        !window.isMinimized && (
           <div
             key={window.id}
-            className={`absolute bg-black/40 backdrop-blur-2xl rounded-b-lg shadow-2xl border border-white/5 overflow-hidden`}
+            className="absolute bg-black/40 backdrop-blur-2xl rounded-lg shadow-2xl border border-white/5 overflow-hidden"
             style={{
               left: window.position.x,
               top: window.position.y,
               zIndex: window.zIndex,
-              width: window.isFullScreen ? '100%' : app?.width,
-              height: window.isFullScreen ? '100%' : app?.height,
+              width: '90vw',
+              maxWidth: '600px',
+              height: '80vh',
+              maxHeight: '400px',
             }}
           >
             <div
@@ -247,14 +249,12 @@ function App() {
               onMouseDown={(e) => handleMouseDown(e, window.id)}
             >
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-                {window.id !== 'Music' && (
-                  <button
-                    onClick={() => toggleFullScreen(window.id)}
-                    className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
-                  >
-                    {window.isFullScreen ? <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" /> : <Maximize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />}
-                  </button>
-                )}
+                <button
+                  onClick={() => minimizeWindow(window.id)}
+                  className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
+                >
+                  <Minimize2 className="w-4 h-4 text-white/70 group-hover:text-white/90" />
+                </button>
                 <button
                   onClick={() => closeWindow(window.id)}
                   className="w-6 h-6 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors group"
@@ -271,26 +271,26 @@ function App() {
               {window.content}
             </div>
           </div>
-        );
-      })}
+        )
+      ))}
 
       {/* Dock */}
       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
         <div className="flex items-end space-x-2 bg-black/40 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-white/5 shadow-2xl">
-          {apps.map((app, index) => (
+          {dockIcons.map((icon, index) => (
             <div key={index} className="group flex flex-col items-center relative">
               <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 
                              text-white/90 text-xs absolute -top-8 backdrop-blur-2xl px-2 py-1 rounded-md bg-black/40
                              font-medium whitespace-nowrap">
-                {app.name}
+                {icon.name}
               </span>
               <div
-                onClick={() => openWindow(app)}
+                onClick={icon.action}
                 className="w-12 h-12 flex items-center justify-center bg-black/20 rounded-xl backdrop-blur-2xl 
                           hover:bg-white/10 transition-all duration-200 transform hover:scale-110 hover:-translate-y-2 cursor-pointer
                           border border-white/5"
               >
-                <app.icon className="w-8 h-8 text-white/90" />
+                {typeof icon.icon === 'function' ? icon.icon() : <icon.icon className="w-8 h-8 text-white/90" />}
               </div>
             </div>
           ))}
